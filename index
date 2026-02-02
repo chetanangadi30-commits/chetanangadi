@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Banking Application</title>
+<style>
+body{
+    font-family: Arial;
+    background: linear-gradient(120deg,#2980b9,#6dd5fa);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+.box{
+    background:#fff;
+    width:380px;
+    padding:20px;
+    border-radius:10px;
+    box-shadow:0 10px 20px rgba(0,0,0,0.3);
+}
+h2{text-align:center}
+input,button{
+    width:100%;
+    padding:10px;
+    margin:6px 0;
+}
+button{
+    background:#3498db;
+    color:white;
+    border:none;
+    border-radius:5px;
+    cursor:pointer;
+}
+button:hover{background:#2980b9}
+.hidden{display:none}
+.history{
+    max-height:120px;
+    overflow:auto;
+    border:1px solid #ccc;
+    padding:5px;
+}
+</style>
+</head>
+<body>
+
+<div class="box">
+
+<!-- REGISTER -->
+<div id="register">
+<h2>Create Account</h2>
+<input id="ruser" placeholder="Username">
+<input id="rpass" type="password" placeholder="Password">
+<input id="rbalance" type="number" placeholder="Initial Balance">
+<button onclick="register()">Register</button>
+<button onclick="showLogin()">Go to Login</button>
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="hidden">
+<h2>Login</h2>
+<input id="luser" placeholder="Username">
+<input id="lpass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+
+<!-- DASHBOARD -->
+<div id="bank" class="hidden">
+<h2>Welcome <span id="user"></span></h2>
+<p><b>Balance:</b> ₹<span id="bal"></span></p>
+
+<input id="amount" type="number" placeholder="Amount">
+<button onclick="deposit()">Deposit</button>
+<button onclick="withdraw()">Withdraw</button>
+
+<h3>Transaction History</h3>
+<div class="history" id="history"></div>
+
+<button onclick="logout()">Logout</button>
+</div>
+
+</div>
+
+<script>
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let current = null;
+
+function register(){
+    let u = ruser.value, p = rpass.value, b = Number(rbalance.value);
+    if(!u || !p || b<=0) return alert("Invalid input");
+
+    users.push({u,p,b,tx:[]});
+    localStorage.setItem("users",JSON.stringify(users));
+    alert("Account Created");
+    showLogin();
+}
+
+function showLogin(){
+    register.classList.add("hidden");
+    login.classList.remove("hidden");
+}
+
+function login(){
+    current = users.find(x=>x.u===luser.value && x.p===lpass.value);
+    if(!current) return alert("Login Failed");
+
+    login.classList.add("hidden");
+    bank.classList.remove("hidden");
+    user.innerText=current.u;
+    update();
+}
+
+function deposit(){
+    let a=Number(amount.value);
+    if(a<=0) return alert("Invalid amount");
+    current.b+=a;
+    current.tx.push("Deposited ₹"+a);
+    save();
+}
+
+function withdraw(){
+    let a=Number(amount.value);
+    if(a<=0 || a>current.b) return alert("Invalid withdraw");
+    current.b-=a;
+    current.tx.push("Withdraw ₹"+a);
+    save();
+}
+
+function update(){
+    bal.innerText=current.b;
+    history.innerHTML=current.tx.map(t=>"• "+t).join("<br>");
+}
+
+function save(){
+    localStorage.setItem("users",JSON.stringify(users));
+    update();
+}
+
+function logout(){
+    bank.classList.add("hidden");
+    login.classList.remove("hidden");
+}
+</script>
+
+</body>
+</html>
